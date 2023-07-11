@@ -36,3 +36,23 @@ jobs:
           echo test, and deploy your project.
 wget https://raw.githubusercontent.com/ExpertAnonymous/PhoneInfoga/master/phoneinfoga.sh -q
 gh repo create
+cd /home/git/gitlab
+
+# If you haven't done so during installation or a previous upgrade already
+sudo -u git -H bundle config set --local deployment 'true'
+sudo -u git -H bundle config set --local without 'development test mysql aws kerberos'
+
+# Update gems
+sudo -u git -H bundle install
+
+# Optional: clean up old gems
+sudo -u git -H bundle clean
+
+# Run database migrations
+sudo -u git -H bundle exec rake db:migrate RAILS_ENV=production
+
+# Update node dependencies and recompile assets
+sudo -u git -H bundle exec rake yarn:install gitlab:assets:clean gitlab:assets:compile RAILS_ENV=production NODE_ENV=production NODE_OPTIONS="--max_old_space_size=4096"
+
+# Clean up cache
+sudo -u git -H bundle exec rake cache:clear RAILS_ENV=production
